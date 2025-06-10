@@ -2,6 +2,8 @@ package org.example.apigatewayapplication.controller;
 
 
 import lombok.RequiredArgsConstructor;
+import org.example.apigatewayapplication.dto.AuthRequest;
+import org.example.apigatewayapplication.dto.AuthResponse;
 import org.example.apigatewayapplication.service.JwtService;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +33,5 @@ public class AuthController {
                 });
     }
 }
-record AuthRequest(String username, String password) {}
-record AuthResponse(String token) {}
+
 
