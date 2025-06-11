@@ -1,60 +1,46 @@
 package org.example.apigatewayapplication.config;
 
+
+import lombok.AllArgsConstructor;
+import org.example.apigatewayapplication.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.server.SecurityWebFilterChain;
-import static org.springframework.security.config.Customizer.withDefaults;
-
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebFluxSecurity
+@EnableWebSecurity
+@AllArgsConstructor
 public class SecurityConfig {
-    @Bean
-    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-        return http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .authorizeExchange(authorize -> authorize
-                        .pathMatchers("/public/**").permitAll()
-                        .pathMatchers("/admin/**").hasRole("ADMIN")
-                        .pathMatchers("/api/**").hasRole("USER")
-                        .anyExchange().authenticated()
-                )
-                .httpBasic(withDefaults())  // Uso del metodo statico withDefaults()
-                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
-                .build();
-    }
 
-
+    private final UserService userService;
 
     @Bean
-    public MapReactiveUserDetailsService userDetailsService() {
-        UserDetails user = User
-                .withUsername("user")
-                .password(passwordEncoder().encode("password"))
-                .roles("USER")
-                .build();
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        httpSecurity
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorize ->
+                        authorize
+                                .requestMatchers("/auth/signup").permitAll()
+                                .anyRequest().authenticated())
+                .httpBasic(Customizer.withDefaults())
+                .userDetailsService(userService);
 
-        UserDetails admin = User
-                .withUsername("admin")
-                .password(passwordEncoder().encode("admin"))
-                .roles("ADMIN")
-                .build();
-
-        return new MapReactiveUserDetailsService(user, admin);
+        return httpSecurity.build();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-
-
 }
+
+
+

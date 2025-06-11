@@ -1,36 +1,34 @@
+server:
+  port: 9090
+
 spring:
   application:
     name: api-gateway
-  security:
-    user:
-      name: user
-      password: password
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/securitydb
+    username: postgres
+    password: Argolone92!
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
   cloud:
     gateway:
-      routes:
-        - id: Docenti
-          uri: http://localhost:8080  # Sostituisci con l'URL effettivo del tuo servizio
-          predicates:
-          - Path=/api/docenti/**
-          filters:
-            - StripPrefix=1
-            - RewritePath=/api/docenti/(?<segment>.*), /docenti/$\{segment}
-
-        - id: Discenti
-          uri: http://localhost:8080  # Sostituisci con l'URL effettivo del tuo servizio
-          predicates:
-            - Path=/api/discenti/**
-          filters:
-            - StripPrefix=1
-            - RewritePath=/api/discenti/(?<segment>.*), /discenti/$\{segment}
-
-        - id: corsi-service
-          uri: http://localhost:8081  # Sostituisci con l'URL effettivo del tuo servizio
-          predicates:
-            - Path=/api/corsi/**
-          filters:
-            - StripPrefix=1
-            - RewritePath=/api/corsi/(?<segment>.*), /corsi/$\{segment}
-
-server:
-  port: 9090
+      server:
+        webmvc:
+          routes:
+          - id: docenti
+            uri: http://localhost:8080
+            predicates:
+              - Path=/docenti/**
+          - id: discenti
+            uri: http://localhost:8080
+            predicates:
+              - Path=/discenti/**
+          - id: corsi-service
+            uri: http://localhost:8081
+            predicates:
+              - Path=/corsi/**
